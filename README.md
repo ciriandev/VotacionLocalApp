@@ -1,4 +1,5 @@
 # 🗳️ Votación Local – Flutter App
+# 🦊 by CIRIANDEV
 
 Aplicación móvil para realizar votaciones secretas en tiempo real, diseñada para funcionar sin conexión a Internet. Todos los dispositivos deben estar conectados a la **misma red Wi-Fi**, lo que garantiza privacidad, sencillez y control total del proceso.
 
