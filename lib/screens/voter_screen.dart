@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../controllers/vote_controller.dart';
 
 class VoterScreen extends StatefulWidget {
   const VoterScreen({super.key});
@@ -12,29 +13,32 @@ class _VoterScreenState extends State<VoterScreen> {
   String? _selectedOption;
   bool _hasVoted = false;
 
-  // Estas opciones luego vendrán desde el Master por sockets
-  final List<String> _options = ['Opción A', 'Opción B', 'Opción C'];
+  final voteController = VoteController();
 
   void _sendVote() {
-    if (_nameController.text.trim().isEmpty || _selectedOption == null) {
+    final name = _nameController.text.trim();
+    if (name.isEmpty || _selectedOption == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debes introducir tu nombre y seleccionar una opción.')),
+        const SnackBar(content: Text('Introduce tu nombre y selecciona una opción.')),
       );
       return;
     }
+
+    voteController.vote(_selectedOption!);
 
     setState(() {
       _hasVoted = true;
     });
 
-    // Aquí más adelante enviaremos el voto al master
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Voto enviado por ${_nameController.text.trim()}')),
+      SnackBar(content: Text('¡Gracias por votar, $name!')),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final options = voteController.options;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Votante')),
       body: Padding(
@@ -62,16 +66,18 @@ class _VoterScreenState extends State<VoterScreen> {
                   ),
                   const SizedBox(height: 20),
                   const Text('Selecciona una opción:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ..._options.map((option) => RadioListTile<String>(
-                        title: Text(option),
-                        value: option,
-                        groupValue: _selectedOption,
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedOption = value;
-                          });
-                        },
-                      )),
+                  ...options.map(
+                    (option) => RadioListTile<String>(
+                      title: Text(option.label),
+                      value: option.label,
+                      groupValue: _selectedOption,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedOption = value;
+                        });
+                      },
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   Center(
                     child: ElevatedButton.icon(

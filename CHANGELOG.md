@@ -4,6 +4,23 @@ Este archivo documenta los cambios importantes realizados en la app **Votación 
 
 ---
 
+## [0.2.0] - 2025-08-03
+
+### Añadido
+- Simulación de flujo completo de votación entre Master y Votante.
+- Pantalla del Master ahora muestra número de votos recibidos y votos por opción.
+- Votante solo puede votar una vez.
+- Se puede probar todo el flujo usando dos emuladores de Android.
+
+### Modificado
+- Estructura de navegación interna para mantener el estado mientras se navega entre pantallas.
+
+### Nota
+Este es el último paso antes de comenzar con la implementación de red local real (sockets TCP).
+
+
+---
+
 ## [0.1.0] - 2025-08-02
 
 ### Añadido
@@ -20,14 +37,10 @@ Este archivo documenta los cambios importantes realizados en la app **Votación 
 - Modelo de datos `VotingOption` para representar opciones de votación
 - Navegación entre pantallas con rutas nombradas
 
----
-
 ### Mejoras internas
 - Archivos `.gitignore` y `LICENSE` añadidos
 - Separación de pantallas en archivos organizados en `/lib/screens`
 - Estructura de modelos en `/lib/models`
-
----
 
 ### Notas
 - Esta versión es puramente local y sin conexión de red

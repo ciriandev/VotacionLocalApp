@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../controllers/vote_controller.dart';
 
 class MasterScreen extends StatefulWidget {
   const MasterScreen({super.key});
@@ -8,10 +9,11 @@ class MasterScreen extends StatefulWidget {
 }
 
 class _MasterScreenState extends State<MasterScreen> {
-  final TextEditingController _optionController = TextEditingController();
   final List<String> _options = [];
-  final List<String> _participants = []; // Más adelante vendrán por sockets
+  final TextEditingController _optionController = TextEditingController();
   bool _votingStarted = false;
+
+  final voteController = VoteController();
 
   void _addOption() {
     final text = _optionController.text.trim();
@@ -24,74 +26,107 @@ class _MasterScreenState extends State<MasterScreen> {
   }
 
   void _startVoting() {
-    if (_options.length >= 2) {
-      setState(() {
-        _votingStarted = true;
-      });
-      // Aquí luego llamaremos a la lógica de red
-    } else {
+    if (_options.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Agrega al menos dos opciones para votar.')),
+        const SnackBar(content: Text('Debes añadir al menos 2 opciones.')),
       );
+      return;
     }
+
+    voteController.setOptions(_options);
+    setState(() {
+      _votingStarted = true;
+    });
+  }
+
+  void _resetVoting() {
+    voteController.reset();
+    setState(() {
+      _options.clear();
+      _votingStarted = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final votesReceived = voteController.votesReceived;
     return Scaffold(
-      appBar: AppBar(title: const Text('Master - Configura tu votación')),
+      appBar: AppBar(
+        title: const Text('Master - Crear votación'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _resetVoting,
+          ),
+        ],
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            if (!_votingStarted) ...[
-              const Text('Opciones de votación:', style: TextStyle(fontWeight: FontWeight.bold)),
-              Row(
+        padding: const EdgeInsets.all(16),
+        child: _votingStarted
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _optionController,
-                      decoration: const InputDecoration(labelText: 'Nueva opción'),
+                  const Text(
+                    'Votación en curso',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  Text('Votos recibidos: $votesReceived'),
+                  const Divider(),
+                  const Text(
+                    'Opciones:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  ...voteController.options.map(
+                    (opt) => ListTile(
+                      title: Text(opt.label),
+                      trailing: Text('${opt.votes} votos'),
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: _addOption,
+                ],
+              )
+            : Column(
+                children: [
+                  const Text(
+                    'Introduce las opciones a votar:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _optionController,
+                          decoration: const InputDecoration(
+                            hintText: 'Nueva opción',
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        onPressed: _addOption,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  ..._options.map((opt) => ListTile(
+                        title: Text(opt),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () {
+                            setState(() {
+                              _options.remove(opt);
+                            });
+                          },
+                        ),
+                      )),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text('Iniciar votación'),
+                    onPressed: _startVoting,
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _options.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Text(_options[index]),
-                    );
-                  },
-                ),
-              ),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Iniciar votación'),
-                onPressed: _startVoting,
-              ),
-            ] else ...[
-              const Text('Votación en curso...', style: TextStyle(fontSize: 18)),
-              const SizedBox(height: 20),
-              const Text('Participantes conectados:', style: TextStyle(fontWeight: FontWeight.bold)),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _participants.length,
-                  itemBuilder: (context, index) => ListTile(
-                    leading: const Icon(Icons.person),
-                    title: Text(_participants[index]),
-                  ),
-                ),
-              ),
-            ]
-          ],
-        ),
       ),
     );
   }
