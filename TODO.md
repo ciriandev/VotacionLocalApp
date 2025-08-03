@@ -9,17 +9,17 @@ Lista de tareas y funcionalidades planificadas para la app Flutter de votación 
 - [x] Crear proyecto Flutter
 - [x] Subir a repositorio de GitHub
 - [x] Añadir `.gitignore` y `LICENSE`
-- [ ] Pantalla de selección de rol (Master / Votante)
+- [x] Pantalla de selección de rol (Master / Votante)
 
 ---
 
 ## 🔧 Funcionalidades principales
 
 - [ ] Crear sesión de votación como Master
-- [ ] Introducir opciones de voto
+- [x] Introducir opciones de voto
 - [ ] Servidor socket TCP para recibir conexiones de votantes
 - [ ] Votante detecta y se conecta al Master en la red
-- [ ] Votante introduce su nombre y vota (una sola vez)
+- [x] Votante introduce su nombre y vota (una sola vez)
 - [ ] Enviar confirmación de voto al Master
 - [ ] Mostrar en tiempo real:
   - [ ] Número de votantes conectados
@@ -30,8 +30,8 @@ Lista de tareas y funcionalidades planificadas para la app Flutter de votación 
 
 ## 🎨 Interfaz de usuario
 
-- [ ] UI para introducir opciones de voto (Master)
-- [ ] UI para votar (Votante)
+- [x] UI para introducir opciones de voto (Master)
+- [x] UI para votar (Votante)
 - [ ] Indicadores de conexión/voto en progreso
 - [ ] Mostrar resultados (gráfica o lista)
 
