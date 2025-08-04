@@ -4,6 +4,29 @@ Este archivo documenta los cambios importantes realizados en la app **Votación 
 
 ---
 
+## [0.3.0] - 2025-08-04
+
+### Añadido
+- Primer borrador de servidor TCP (Master) y cliente TCP (Votante) usando sockets locales.
+- Envío de las opciones de votación al conectarse un cliente.
+- Preparación de la lógica para recibir votos por red.
+- Campo de IP manual en el Votante para conectarse al Master.
+- Generación del APK en modo release para pruebas en dispositivos Android reales.
+
+### Modificado
+- Refactor de la pantalla del Votante para que pueda recibir dinámicamente las opciones.
+- Ajustes en `VoteController` para futuras actualizaciones por red.
+
+### En progreso
+- Verificación de la conexión real entre dispositivos
+- Envío correcto de votos desde el cliente y su recepción en el servidor
+- Manejo de errores y desconexiones
+
+### Notas
+- La arquitectura de comunicación está en marcha pero **aún no se ha confirmado funcionalmente** entre dispositivos reales.
+
+---
+
 ## [0.2.0] - 2025-08-03
 
 ### Añadido

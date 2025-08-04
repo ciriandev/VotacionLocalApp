@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../controllers/vote_controller.dart';
+import '../services/socket_server.dart';
+
 
 class MasterScreen extends StatefulWidget {
   const MasterScreen({super.key});
@@ -11,6 +13,7 @@ class MasterScreen extends StatefulWidget {
 class _MasterScreenState extends State<MasterScreen> {
   final List<String> _options = [];
   final TextEditingController _optionController = TextEditingController();
+  final SocketServer socketServer = SocketServer();
   bool _votingStarted = false;
 
   final voteController = VoteController();
@@ -25,19 +28,21 @@ class _MasterScreenState extends State<MasterScreen> {
     }
   }
 
-  void _startVoting() {
-    if (_options.length < 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debes añadir al menos 2 opciones.')),
-      );
-      return;
-    }
-
-    voteController.setOptions(_options);
-    setState(() {
-      _votingStarted = true;
-    });
+  Future<void> _startVoting() async {
+  if (_options.length < 2) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Debes añadir al menos 2 opciones.')),
+    );
+    return;
   }
+
+  await socketServer.start();
+  voteController.setOptions(_options);
+  setState(() {
+    _votingStarted = true;
+  });
+}
+
 
   void _resetVoting() {
     voteController.reset();

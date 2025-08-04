@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../controllers/vote_controller.dart';
+import '../services/socket_client.dart';
 
 class VoterScreen extends StatefulWidget {
   const VoterScreen({super.key});
@@ -9,81 +9,129 @@ class VoterScreen extends StatefulWidget {
 }
 
 class _VoterScreenState extends State<VoterScreen> {
-  final TextEditingController _nameController = TextEditingController();
-  String? _selectedOption;
-  bool _hasVoted = false;
+  final TextEditingController _nombreController = TextEditingController();
+  final TextEditingController _ipController = TextEditingController();
 
-  final voteController = VoteController();
+  final SocketClient socketClient = SocketClient();
 
-  void _sendVote() {
-    final name = _nameController.text.trim();
-    if (name.isEmpty || _selectedOption == null) {
+  String? _opcionSeleccionada;
+  bool _votoEnviado = false;
+  bool _opcionesCargadas = false;
+
+  List<String> _opciones = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Configura qué hacer cuando se reciben las opciones
+    socketClient.onOpcionesRecibidas = (opciones) {
+      setState(() {
+        _opciones = opciones;
+        _opcionesCargadas = true;
+      });
+    };
+  }
+
+  Future<void> _conectarYRecibirOpciones() async {
+    final ip = _ipController.text.trim();
+    if (ip.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Introduce tu nombre y selecciona una opción.')),
+        const SnackBar(content: Text('Introduce la IP del Master.')),
       );
       return;
     }
 
-    voteController.vote(_selectedOption!);
+    final conectado = await socketClient.connect(ip);
+    if (!conectado) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo conectar al servidor.')),
+      );
+    }
+  }
+
+  Future<void> _enviarVoto() async {
+    final nombre = _nombreController.text.trim();
+    final ip = _ipController.text.trim();
+
+    if (nombre.isEmpty || _opcionSeleccionada == null || ip.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Completa todos los campos.')),
+      );
+      return;
+    }
+
+    socketClient.sendVote(
+      nombre: nombre,
+      opcion: _opcionSeleccionada!,
+    );
 
     setState(() {
-      _hasVoted = true;
+      _votoEnviado = true;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('¡Gracias por votar, $name!')),
-    );
+    socketClient.disconnect(); // desconecta después de votar
   }
 
   @override
   Widget build(BuildContext context) {
-    final options = voteController.options;
-
     return Scaffold(
       appBar: AppBar(title: const Text('Votante')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: _hasVoted
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.how_to_vote, size: 60, color: Colors.green),
-                    SizedBox(height: 20),
-                    Text('Gracias por tu voto.', style: TextStyle(fontSize: 18)),
-                  ],
-                ),
-              )
+        child: _votoEnviado
+            ? const Center(child: Text('✅ Gracias por tu voto'))
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Tu nombre:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  TextField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      hintText: 'Introduce tu nombre',
-                    ),
+                  const Text('Introduce tu nombre:'),
+                  TextField(controller: _nombreController),
+                  const SizedBox(height: 16),
+                  const Text('IP del Master:'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _ipController,
+                          decoration: const InputDecoration(
+                            hintText: 'Ej: 192.168.1.34',
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: _conectarYRecibirOpciones,
+                        child: const Text('Conectar'),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                  const Text('Selecciona una opción:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ...options.map(
-                    (option) => RadioListTile<String>(
-                      title: Text(option.label),
-                      value: option.label,
-                      groupValue: _selectedOption,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedOption = value;
-                        });
-                      },
+                  const SizedBox(height: 16),
+                  const Text('Selecciona tu opción:'),
+                  if (!_opcionesCargadas)
+                    const Text(
+                      'Conéctate primero para ver las opciones.',
+                      style: TextStyle(color: Colors.grey),
                     ),
-                  ),
-                  const SizedBox(height: 20),
+                  ..._opciones.map((opcion) {
+                    return RadioListTile(
+                      title: Text(opcion),
+                      value: opcion,
+                      groupValue: _opcionSeleccionada,
+                      onChanged: _opcionesCargadas
+                          ? (value) {
+                              setState(() {
+                                _opcionSeleccionada = value as String?;
+                              });
+                            }
+                          : null,
+                    );
+                  }).toList(),
+                  const SizedBox(height: 16),
                   Center(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.send),
-                      label: const Text('Enviar voto'),
-                      onPressed: _sendVote,
+                    child: ElevatedButton(
+                      onPressed: _opcionesCargadas ? _enviarVoto : null,
+                      child: const Text('Enviar voto'),
                     ),
                   ),
                 ],

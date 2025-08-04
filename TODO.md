@@ -17,13 +17,13 @@ Lista de tareas y funcionalidades planificadas para la app Flutter de votación 
 
 - [x] Crear sesión de votación como Master
 - [x] Introducir opciones de voto
-- [ ] Servidor socket TCP para recibir conexiones de votantes
+- [x] Servidor socket TCP para recibir conexiones de votantes
 - [ ] Votante detecta y se conecta al Master en la red
-- [x] Votante introduce su nombre y vota (una sola vez)
+- [ ] Votante introduce su nombre y vota (una sola vez)
 - [ ] Enviar confirmación de voto al Master
-- [x] Mostrar en tiempo real:
-  - [x] Número de votantes conectados
-  - [x] Número de votos recibidos
+- [ ] Mostrar en tiempo real:
+  - [ ] Número de votantes conectados
+  - [ ] Número de votos recibidos
 - [ ] Mostrar resultados al finalizar la votación
 
 ---
@@ -40,7 +40,7 @@ Lista de tareas y funcionalidades planificadas para la app Flutter de votación 
 ## 🧪 Técnicas y pruebas
 
 - [ ] Pruebas con dos dispositivos reales en red local
-- [ ] Compatibilidad con Android
+- [x] Compatibilidad con Android
 - [ ] Compatibilidad con iOS (opcional)
 - [ ] Manejo de errores en conexión
 - [ ] Evitar votos duplicados
